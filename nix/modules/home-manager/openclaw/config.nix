@@ -401,6 +401,37 @@ let
   appInstalls = lib.filter (item: item != null) (map (item: item.appInstall) instanceConfigs);
   launchdLabels = lib.filter (label: label != null) (map (item: item.launchdLabel) instanceConfigs);
   launchdLabelArgs = lib.concatStringsSep " " (map lib.escapeShellArg launchdLabels);
+  reloadLabelsByName = lib.mapAttrs (_: inst: inst.launchd.label) enabledInstances;
+  reloadFallbackLabel =
+    if reloadLabelsByName ? default then
+      reloadLabelsByName.default
+    else if reloadLabelsByName != { } then
+      reloadLabelsByName.${lib.head (lib.sort (a: b: a < b) (lib.attrNames reloadLabelsByName))}
+    else
+      "com.steipete.openclaw.gateway";
+  reloadTestLabel = reloadLabelsByName.test or reloadFallbackLabel;
+  reloadProdLabel = reloadLabelsByName.prod or reloadFallbackLabel;
+  reloadBothLabels =
+    let
+      labels = lib.unique (
+        map (name: reloadLabelsByName.${name}) (lib.sort (a: b: a < b) (lib.attrNames reloadLabelsByName))
+      );
+    in
+    if labels == [ ] then [ reloadFallbackLabel ] else labels;
+  quoteReloadLabel = label: ''"${label}"'';
+  reloadScriptText =
+    builtins.replaceStrings
+      [
+        "@testLabel@"
+        "@prodLabel@"
+        "@bothLabels@"
+      ]
+      [
+        (quoteReloadLabel reloadTestLabel)
+        (quoteReloadLabel reloadProdLabel)
+        (lib.concatStringsSep " " (map quoteReloadLabel reloadBothLabels))
+      ]
+      (builtins.readFile ../openclaw-reload.sh);
   runtimePluginPackagesAll = lib.unique (
     lib.flatten (map (item: item.runtimePluginPackages) instanceConfigs)
   );
@@ -452,7 +483,8 @@ in
       (lib.optionalAttrs cfg.reloadScript.enable {
         ".local/bin/openclaw-reload" = {
           executable = true;
-          source = ../openclaw-reload.sh;
+          source = pkgs.writeText "openclaw-reload" reloadScriptText;
+          text = reloadScriptText;
         };
       })
     ];

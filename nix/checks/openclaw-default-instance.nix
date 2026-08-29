@@ -170,6 +170,69 @@ let
       "ok"
   );
 
+  reloadHelperText =
+    eval:
+    let
+      file = eval.config.home.file.".local/bin/openclaw-reload" or { };
+    in
+    if file ? text then
+      file.text
+    else if file ? source then
+      builtins.readFile file.source
+    else
+      throw "openclaw-reload helper was not installed.";
+
+  reloadHasExactLabel =
+    text: label: lib.hasInfix ''"${label}"'' text || lib.hasInfix "'${label}'" text;
+
+  reloadDefaultEval = moduleEval {
+    reloadScript.enable = true;
+  };
+  reloadDefaultText = reloadHelperText reloadDefaultEval;
+  reloadDefaultCheck =
+    builtins.deepSeq (requireNoAssertionFailures "reload default labels" reloadDefaultEval)
+      (
+        if lib.hasInfix "com.steipete.openclaw.gateway.nix" reloadDefaultText then
+          throw "Default reload helper still hardcodes .nix launchd labels."
+        else if !(reloadHasExactLabel reloadDefaultText "com.steipete.openclaw.gateway") then
+          throw "Default reload helper missing module default launchd label."
+        else
+          "ok"
+      );
+
+  reloadNamedEval = moduleEval {
+    reloadScript.enable = true;
+    instances.prod.enable = true;
+    instances.test.enable = true;
+  };
+  reloadNamedText = reloadHelperText reloadNamedEval;
+  reloadNamedCheck =
+    builtins.deepSeq (requireNoAssertionFailures "reload named labels" reloadNamedEval)
+      (
+        if !(reloadHasExactLabel reloadNamedText "com.steipete.openclaw.gateway.prod") then
+          throw "Named reload helper missing prod instance launchd label."
+        else if !(reloadHasExactLabel reloadNamedText "com.steipete.openclaw.gateway.test") then
+          throw "Named reload helper missing test instance launchd label."
+        else if lib.hasInfix "com.steipete.openclaw.gateway.nix" reloadNamedText then
+          throw "Named reload helper still hardcodes .nix launchd labels."
+        else
+          "ok"
+      );
+
+  reloadCustomEval = moduleEval {
+    reloadScript.enable = true;
+    launchd.label = "com.example.openclaw.gateway";
+  };
+  reloadCustomText = reloadHelperText reloadCustomEval;
+  reloadCustomCheck =
+    builtins.deepSeq (requireNoAssertionFailures "reload custom label" reloadCustomEval)
+      (
+        if !(reloadHasExactLabel reloadCustomText "com.example.openclaw.gateway") then
+          throw "Custom reload helper did not use programs.openclaw.launchd.label."
+        else
+          "ok"
+      );
+
   sourceOverrideEval = moduleEval {
     instances.dev = {
       enable = true;
@@ -847,6 +910,9 @@ let
   checkKey = builtins.deepSeq (
     [
       defaultCheck
+      reloadDefaultCheck
+      reloadNamedCheck
+      reloadCustomCheck
       userSkillCheck
       workspaceBootstrapCheck
       documentsRemovedCheck

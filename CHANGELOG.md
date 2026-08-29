@@ -8,6 +8,14 @@ This changelog starts with the current pre-1.0 nix-openclaw Home Manager module
 API transition.
 Older repository history is available in git.
 
+## 2026-08-29
+
+### Fixed
+
+- `openclaw-reload` now kickstarts the configured Home Manager launchd labels
+  (`com.steipete.openclaw.gateway` by default, or `com.steipete.openclaw.gateway.<name>`
+  for named instances) instead of the hardcoded `.nix` / `.nix-test` labels.
+
 ## 2026-06-06
 
 ### Changed

@@ -13,10 +13,12 @@ EOF
 
 instance="${1:-test}"
 
+# @testLabel@ / @prodLabel@ / @bothLabels@ are replaced with configured
+# instance launchd labels when Home Manager installs this helper.
 case "$instance" in
-  test) labels=("com.steipete.openclaw.gateway.nix-test") ;;
-  prod) labels=("com.steipete.openclaw.gateway.nix") ;;
-  both) labels=("com.steipete.openclaw.gateway.nix" "com.steipete.openclaw.gateway.nix-test") ;;
+  test) labels=(@testLabel@) ;;
+  prod) labels=(@prodLabel@) ;;
+  both) labels=(@bothLabels@) ;;
   -h|--help) usage; exit 0 ;;
   *) usage; exit 1 ;;
 esac
