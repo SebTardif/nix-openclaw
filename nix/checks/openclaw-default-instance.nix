@@ -977,6 +977,29 @@ let
     npmRuntimePluginEval.config.home.file.".openclaw/openclaw.json".text
   );
 
+  spacedStateDir = "/tmp/my state/.openclaw";
+  spacedConfigPath = "${spacedStateDir}/openclaw.json";
+  spacedConfigFilesEval = moduleEval {
+    instances.default.stateDir = spacedStateDir;
+  };
+  spacedConfigFilesActivation =
+    spacedConfigFilesEval.config.home.activation.openclawConfigFiles.data or "";
+  spacedQuotedConfigPath = lib.escapeShellArg spacedConfigPath;
+  configFilesQuoteCheck =
+    builtins.deepSeq (requireNoAssertionFailures "configPath spaces" spacedConfigFilesEval)
+      (
+        if !(lib.hasInfix " -sfn " spacedConfigFilesActivation) then
+          throw "openclawConfigFiles did not emit ln -sfn."
+        else if !(lib.hasInfix " -sfn '" spacedConfigFilesActivation) then
+          throw "openclawConfigFiles did not quote the ln source with escapeShellArg."
+        else if !(lib.hasInfix spacedQuotedConfigPath spacedConfigFilesActivation) then
+          throw "openclawConfigFiles did not quote configPath with escapeShellArg."
+        else if lib.hasInfix " ${spacedConfigPath}" spacedConfigFilesActivation then
+          throw "openclawConfigFiles still interpolates unquoted configPath."
+        else
+          "ok"
+      );
+
   checkKey = builtins.deepSeq (
     [
       defaultCheck
@@ -992,6 +1015,7 @@ let
       invalidWorkspaceFileCheck
       secretProviderCheck
       secretRefPassthroughCheck
+      configFilesQuoteCheck
     ]
     ++ lib.optionals includePluginChecks [
       customPluginCheck

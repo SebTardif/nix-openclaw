@@ -18,6 +18,7 @@ Older repository history is available in git.
 
 - Patch the native pnpm 12 Linux executable to use the Nix loader and runtime libraries, so its public package output runs inside the Nix sandbox.
 - Constrain workspace activation cleanup and replacement to configured workspace roots, preserve stale paths from removed or moved instances with a warning, and avoid changing symlink targets or hardlinked file permissions during cleanup. Create home-relative workspace paths containing spaces correctly during activation. Thanks @SebTardif (#119).
+- Quote both `openclawConfigFiles` `ln` operands so `stateDir` and home paths with spaces do not word-split during activation.
 
 ## 2026-08-30
 
