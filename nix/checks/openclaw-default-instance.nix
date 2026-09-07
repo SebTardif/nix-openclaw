@@ -176,9 +176,60 @@ let
   homeRelativeConfigCheck =
     let
       activation = homeRelativeConfigEval.config.home.activation.openclawConfigFiles.data;
+      homeFile = homeRelativeConfigEval.config.home.file;
+      generated =
+        if builtins.hasAttr "openclaw state/openclaw.json" homeFile then
+          generatedConfig homeRelativeConfigEval "openclaw state/openclaw.json"
+        else
+          { };
+      systemdService =
+        if pkgs.stdenv.hostPlatform.isLinux then
+          homeRelativeConfigEval.config.systemd.user.services.openclaw-gateway.Service or { }
+        else
+          { };
+      launchdConfig =
+        if pkgs.stdenv.hostPlatform.isDarwin then
+          homeRelativeConfigEval.config.launchd.agents."com.steipete.openclaw.gateway".config or { }
+        else
+          { };
     in
     if !(lib.hasInfix " '/tmp/openclaw state/openclaw.json'" activation) then
       throw "Config activation must resolve home-relative paths before shell escaping."
+    else if builtins.hasAttr "~/openclaw state/openclaw.json" homeFile then
+      throw "home.file still uses an unresolved ~/ config destination."
+    else if !(builtins.hasAttr "openclaw state/openclaw.json" homeFile) then
+      throw "home.file must materialize the resolved config path, not a literal ~/ destination."
+    else if (((generated.agents or { }).defaults or { }).workspace or null) != "/tmp/openclaw state/workspace" then
+      throw "Workspace pin must resolve home-relative workspaceDir."
+    else if pkgs.stdenv.hostPlatform.isLinux && ((systemdService.WorkingDirectory or "") != "/tmp/openclaw state") then
+      throw "Systemd WorkingDirectory must resolve home-relative stateDir."
+    else if
+      pkgs.stdenv.hostPlatform.isLinux
+      && !(lib.elem "\"OPENCLAW_STATE_DIR=/tmp/openclaw state\"" (systemdService.Environment or [ ]))
+    then
+      throw "Systemd OPENCLAW_STATE_DIR must resolve home-relative stateDir."
+    else if
+      pkgs.stdenv.hostPlatform.isLinux
+      && !(lib.elem "\"OPENCLAW_CONFIG_PATH=/tmp/openclaw state/openclaw.json\"" (
+        systemdService.Environment or [ ]
+      ))
+    then
+      throw "Systemd OPENCLAW_CONFIG_PATH must resolve home-relative configPath."
+    else if pkgs.stdenv.hostPlatform.isDarwin && ((launchdConfig.WorkingDirectory or "") != "/tmp/openclaw state") then
+      throw "launchd WorkingDirectory must resolve home-relative stateDir."
+    else if
+      pkgs.stdenv.hostPlatform.isDarwin
+      && (((launchdConfig.EnvironmentVariables or { }).OPENCLAW_STATE_DIR or null) != "/tmp/openclaw state")
+    then
+      throw "launchd OPENCLAW_STATE_DIR must resolve home-relative stateDir."
+    else if
+      pkgs.stdenv.hostPlatform.isDarwin
+      && (
+        ((launchdConfig.EnvironmentVariables or { }).OPENCLAW_CONFIG_PATH or null)
+        != "/tmp/openclaw state/openclaw.json"
+      )
+    then
+      throw "launchd OPENCLAW_CONFIG_PATH must resolve home-relative configPath."
     else
       "ok";
 
