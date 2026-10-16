@@ -178,10 +178,62 @@ for (const name of functions) {
 // This adapter does not add an all-effects install gate or propagate caller env.
 const patchedInstall = install.replaceAll(loop, `if ((params.env ?? process.env).OPENCLAW_NIX_MODE !== "1") ${loop}`);
 
+// SDK issuer binding cannot protect credentials saved before that binding existed.
+// Require reauthorization instead of letting discovery adopt an unbound secret.
+const providerFiles = [...modules.keys()].filter((name) => modules.get(name).includes("function createMcpOAuthClientProvider("));
+const oauthPatches = [];
+if (providerFiles.length) {
+  const name = unique(providerFiles, "MCP OAuth provider");
+  const source = modules.get(name);
+  const clientGetter = "return readMcpOAuthStore(storeKey).clientInformation;";
+  const tokenGetter = "tokens() {\n\t\t\tif (params.suppressStoredTokens) return;\n\t\t\tconst store = readMcpOAuthStore(storeKey);";
+  requireContract(source.split(clientGetter).length === 2, "MCP OAuth client getter");
+  requireContract(source.split(tokenGetter).length === 2, "MCP OAuth token getter");
+  let patchedProvider = source
+    .replace(clientGetter, `const client = readMcpOAuthStore(storeKey).clientInformation;
+\t\t\treturn typeof client?.issuer === "string" && client.issuer.length > 0 ? client : void 0;`)
+    .replace(tokenGetter, `${tokenGetter}
+\t\t\tif (typeof store.tokens?.issuer !== "string" || !store.tokens.issuer) return;`);
+  if (source.includes("function resolveMcpOAuthAccessToken(")) {
+    const missingToken = "if (!tokens?.access_token)";
+    requireContract(source.split(missingToken).length === 2, "MCP OAuth access token entry point");
+    patchedProvider = patchedProvider.replace(missingToken,
+      'if (!tokens?.access_token || typeof tokens.issuer !== "string" || !tokens.issuer)');
+  }
+  oauthPatches.push([name, patchedProvider]);
+}
+
+const uiFiles = [...modules.keys()].filter((name) => modules.get(name).includes("function readPluginControlUiAssets("));
+const uiPatches = [];
+if (uiFiles.length) {
+  const assetName = unique(uiFiles, "Control UI asset reader");
+  const assets = modules.get(assetName);
+  const assetRoot = 'const pluginRoot = await root(rootDir, {\n\t\thardlinks: "reject"';
+  const reloadCall = "loadPluginManifest(record.rootDir, true, record.rootDir)";
+  const [reloadName, reload] = owner(reloadCall, "Control UI manifest reload");
+  requireContract(assets.split(assetRoot).length === 2, "Control UI asset root");
+  requireContract(reload.split(reloadCall).length === 2, "Control UI manifest reload count");
+  requireContract(assetName !== reloadName, "distinct Control UI transform owners");
+  for (const source of [assets, reload]) {
+    requireContract(!source.includes("shouldRejectHardlinkedPluginFiles"), "Control UI policy import");
+  }
+  // Treat both reads as config-origin roots: only Nix mode and a canonical
+  // store path relax hardlinks; mutable roots and symlinks remain restricted.
+  uiPatches.push([
+    assetName,
+    `${importLine}\n${assets.replace(assetRoot, 'const pluginRoot = await root(rootDir, {\n\t\thardlinks: shouldRejectHardlinkedPluginFiles({ rootDir, origin: "config" }) ? "reject" : "allow"')}`,
+  ], [
+    reloadName,
+    `${importLine}\n${reload.replace(reloadCall, 'loadPluginManifest(record.rootDir, shouldRejectHardlinkedPluginFiles({ rootDir: record.rootDir, origin: "config" }), record.rootDir)')}`,
+  ]);
+}
+
 // No contract failure may leave the earlier ownership transform partially written.
 for (const [name, source] of [
   [ownershipName, patchedOwnership],
   [installName, patchedInstall],
+  ...oauthPatches,
+  ...uiPatches,
 ]) {
   fs.writeFileSync(path.join(distDir, name), source);
 }

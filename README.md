@@ -70,6 +70,10 @@ You talk to Telegram, your machine does things.
 
 ## OpenClaw Runtime Plugins
 
+Plugin Control UI assets and manifest reloads support Nix-store hardlinks when
+running in Nix mode, including stores optimized with `auto-optimise-store`.
+Mutable plugin roots retain the upstream hardlink restrictions.
+
 OpenClaw runtime plugins are JavaScript plugin roots loaded by the OpenClaw
 Gateway. They are the plugins described in the upstream
 [OpenClaw plugin docs](https://docs.openclaw.ai/tools/plugin): Discord, Slack,
@@ -986,6 +990,18 @@ programs.openclaw = {
 Plugins are keyed by their declared `name`. If two plugins declare the same name, the **last entry wins** (use this to override a prod plugin with a local dev one).
 
 ## Packaging & Updates
+
+### MCP OAuth credentials after upgrading
+
+The stable npm gateway packages MCP SDK 1.31.0 to fix
+[CVE-2026-104850](https://github.com/advisories/GHSA-6qxp-vccf-f47h).
+Saved OAuth clients and tokens must identify their authorization server. Older
+credentials without that issuer are ignored; run `openclaw mcp logout <name>`
+and `openclaw mcp login <name>` for each affected HTTP MCP server. Complete the
+login only for servers you trust. If credentials may already have been exposed,
+revoke the tokens and rotate the client secret at the authorization server.
+Explicit source overrides use their upstream dependency locks and must include
+the corresponding SDK fix themselves.
 
 **Goal:** `nix-openclaw` is a great Nix package. Automation, promotion, and fleet rollout live elsewhere.
 
