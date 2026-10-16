@@ -13,15 +13,15 @@
   minHostVersion = ">=2026.5.12-beta.1";
   expectedIntegrity = "";
   packageName = "@openclaw/amazon-bedrock-provider";
-  version = "2026.9.5";
-  tarballUrl = "https://registry.npmjs.org/@openclaw/amazon-bedrock-provider/-/amazon-bedrock-provider-2026.9.5.tgz";
-  npmIntegrity = "sha512-pp7yLpRL4gwZPDCQjPorPZGkApfrpNqjDKF0zADtjjyHPrG8cNGGZVxMTTE1y3X8849qEaN88oA8UZVmVfh0wg==";
-  npmShasum = "e200849b57efc9e1a8beac7935042394c9d34a0f";
-  nixHash = "sha256-z4orMSvuMmdBTP4djlwLZ8psupM12DyXmjTRl/7gTBE=";
+  version = "2026.10.4";
+  tarballUrl = "https://registry.npmjs.org/@openclaw/amazon-bedrock-provider/-/amazon-bedrock-provider-2026.10.4.tgz";
+  npmIntegrity = "sha512-QtEQjyFBr+fsQim2Rv53Q7x3tbpKQcAnwSmoxHWN7E9JzLPLA+y9yoWoe5T9IffhG3H+06SAgTqJlaKckRiXQQ==";
+  npmShasum = "cd2430825db8fbf7b13dc0687313122981ffe83f";
+  nixHash = "sha256-U+SCEPtfkMzTnx3JBxRuNzA7D7opnin8GkWCdJqdv4M=";
   dependencyMode = "bundled";
   manifestId = "amazon-bedrock";
-  openclawCompat = ">=2026.9.5";
-  peerOpenClaw = ">=2026.9.5";
+  openclawCompat = ">=2026.10.4";
+  peerOpenClaw = ">=2026.10.4";
   runtimeExtensions = [
     "./dist/index.js"
   ];
@@ -33,11 +33,10 @@
     ];
   };
   dependencies = {
-    "@aws-sdk/client-bedrock" = "3.1128.0";
-    "@aws-sdk/client-bedrock-runtime" = "3.1128.0";
-    "@aws-sdk/credential-provider-node" = "3.972.82";
+    "@aws-sdk/client-bedrock" = "3.1136.0";
+    "@aws-sdk/client-bedrock-runtime" = "3.1136.0";
+    "@aws-sdk/credential-provider-node" = "3.972.83";
     "@smithy/node-http-handler" = "4.12.1";
-    "@smithy/shared-ini-file-loader" = "4.7.2";
     "@smithy/types" = "4.18.0";
   };
   optionalDependencies = { };
@@ -46,7 +45,6 @@
     "@aws-sdk/client-bedrock-runtime"
     "@aws-sdk/credential-provider-node"
     "@smithy/node-http-handler"
-    "@smithy/shared-ini-file-loader"
     "@smithy/types"
   ];
   bundledPackageRoots = [
@@ -103,9 +101,6 @@
     "node_modules/@smithy/node-http-handler"
     "node_modules/@smithy/node-http-handler/node_modules/@smithy/core"
     "node_modules/@smithy/node-http-handler/node_modules/tslib"
-    "node_modules/@smithy/shared-ini-file-loader"
-    "node_modules/@smithy/shared-ini-file-loader/node_modules/@smithy/core"
-    "node_modules/@smithy/shared-ini-file-loader/node_modules/tslib"
     "node_modules/@smithy/types"
     "node_modules/@smithy/types/node_modules/tslib"
   ];

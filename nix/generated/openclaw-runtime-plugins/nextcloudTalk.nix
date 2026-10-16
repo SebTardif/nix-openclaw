@@ -13,15 +13,15 @@
   minHostVersion = ">=2026.4.10";
   expectedIntegrity = "";
   packageName = "@openclaw/nextcloud-talk";
-  version = "2026.9.5";
-  tarballUrl = "https://registry.npmjs.org/@openclaw/nextcloud-talk/-/nextcloud-talk-2026.9.5.tgz";
-  npmIntegrity = "sha512-Q2D3QR/5orbKSKcEBkjcbIse1k+PoBjuvUXlCtJPf2/oVzJaW2d6GVom8T3VWMlkrmKlCAma95dUl1ohPvQIxQ==";
-  npmShasum = "fc39578b60c613639755a5cb1df5ce2fc45e854b";
-  nixHash = "sha256-GJCMLXd/paULRJyZSGI5JsObHGyGJq+elvv+5QBFHYo=";
+  version = "2026.10.4";
+  tarballUrl = "https://registry.npmjs.org/@openclaw/nextcloud-talk/-/nextcloud-talk-2026.10.4.tgz";
+  npmIntegrity = "sha512-rJ9Z+YQJhAf+/6h+8SgbEAvTD0Su2j266cqdXYJA7DPULe6FreS7UXfgR1ArINHR3gujO1wpkIqfPt2ELnnlOw==";
+  npmShasum = "7dcf383fdc5f0f13bf37806d80571d55b9130874";
+  nixHash = "sha256-dzmAdjBhEFIOsDN2efcA98Wwtgi5CcNJdLDlQOe7IHs=";
   dependencyMode = "bundled";
   manifestId = "nextcloud-talk";
-  openclawCompat = ">=2026.9.5";
-  peerOpenClaw = ">=2026.9.5";
+  openclawCompat = ">=2026.10.4";
+  peerOpenClaw = ">=2026.10.4";
   runtimeExtensions = [
     "./dist/index.js"
   ];
@@ -31,7 +31,7 @@
   ];
   contracts = { };
   dependencies = {
-    zod = "4.5.4";
+    zod = "4.6.5";
   };
   optionalDependencies = { };
   bundleDependencies = [

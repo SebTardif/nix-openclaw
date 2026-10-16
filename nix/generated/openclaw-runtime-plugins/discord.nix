@@ -13,15 +13,15 @@
   minHostVersion = ">=2026.5.26";
   expectedIntegrity = "";
   packageName = "@openclaw/discord";
-  version = "2026.9.5";
-  tarballUrl = "https://registry.npmjs.org/@openclaw/discord/-/discord-2026.9.5.tgz";
-  npmIntegrity = "sha512-kPEbPiYAnJqxqLHqBnZCr3zowsxzboW0Q7ZdqX52X7IENLrU4CBdK4+ndqzQf+255ilffrYBTDrHBg8a137cgQ==";
-  npmShasum = "66482936332af7f9258f975f75cc9ee3ceef386b";
-  nixHash = "sha256-R1nB9awf65tuu3j23T8/ZfuAgMKdBtEmwwyaUCerwAg=";
+  version = "2026.10.4";
+  tarballUrl = "https://registry.npmjs.org/@openclaw/discord/-/discord-2026.10.4.tgz";
+  npmIntegrity = "sha512-hYtuQRcaD9MJPY94LtiV5BJtGUeBTPsv3LCtyf015Ngc1e81Uuvm2FBe9Jes3m0Zh6fvB1ZapeNcTCn+sGPDGQ==";
+  npmShasum = "1e4fdd67af416481334309bc70a7be5ba87ede3b";
+  nixHash = "sha256-R6PpZ0aBi5dajRpn2rju64+toAnop15PDC/2bfGV7sY=";
   dependencyMode = "bundled";
   manifestId = "discord";
-  openclawCompat = ">=2026.9.5";
-  peerOpenClaw = ">=2026.9.5";
+  openclawCompat = ">=2026.10.4";
+  peerOpenClaw = ">=2026.10.4";
   runtimeExtensions = [
     "./dist/index.js"
   ];
@@ -38,12 +38,12 @@
     "@discord/embedded-app-sdk" = "2.5.0";
     "@discordjs/voice" = "0.19.2";
     discord-api-types = "0.38.55";
-    libopus-wasm = "0.4.0";
+    libopus-wasm = "0.4.1";
     mdast-util-from-markdown = "2.0.3";
-    typebox = "1.3.30";
-    undici = "8.10.2";
+    typebox = "1.3.34";
+    undici = "8.11.2";
     ws = "8.21.3";
-    zod = "4.5.4";
+    zod = "4.6.5";
   };
   optionalDependencies = { };
   bundleDependencies = [
