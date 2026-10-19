@@ -20,6 +20,7 @@ Use targeted checks while debugging, then run the full relevant gate before hand
   `source-override-render`, `runtime-smoke`, `platform-activation`,
   `runtime-plugin-packages`, `runtime-plugin-host`, and `qmd-opt-in`
 - `scripts/hm-activation-macos.sh` when a macOS runner is available
+- `scripts/check-macos-app.sh`: preserve upstream signed bytes/symlinks and verify the universal app signature
 
 Run contract tests inside `nix develop` to select the pinned Node, Bash, and Git.
 CI selects those same packages with `nix shell` on both Linux and macOS.
@@ -28,9 +29,12 @@ Gateway smoke checks allow up to 90 seconds for cold startup, including state
 worker initialization, and still require a successful authenticated health probe.
 
 The provenance job also gates maintainer and same-repository authorization; the
-platform jobs depend on it. Linux and macOS 15 retain all supported-surface
+platform jobs depend on it. Linux and macOS 27 (`xcode-27`) retain all supported-surface
 checks. The historical installed-baseline qualification still verifies Node 22
 from its pinned historical package; current packaging contracts use Node 24.
+The baseline pins historical commit `393177115c64d5066f174967cb94eb10aadd6a3e`,
+which repairs the replaced July app artifact's checksum without changing the
+v2026.7.1 source, app version, or flake inputs.
 
 ## CI Verification
 
@@ -39,3 +43,5 @@ After pushing maintainer fixes, verify the GitHub Actions run for the pushed com
 Never say you will keep polling unless a blocking poll is already running. If reporting a poll, name the active run or local polling session.
 
 If CI fails, inspect the failing run, classify the failure, fix what belongs to `nix-openclaw`, and rerun until green or until the exact external blocker is proven.
+
+Darwin CI uses Apple Silicon `xcode-27` runners. Nix continues to supply the SDK and deployment targets from the unchanged flake lock; the upstream signed app is copied unchanged. No Intel hardware job or Xcode pin is needed.
